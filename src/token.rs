@@ -9,6 +9,14 @@ pub enum TokenType {
     // operator
     Assign,
     Plus,
+    Minus,
+    Bang,
+    Asterisk,
+    Slash,
+    Lt,
+    Gt,
+    Eq,
+    NotEq,
 
     // separator
     Comma,
@@ -22,6 +30,11 @@ pub enum TokenType {
     // keywords
     Function,
     Let,
+    True,
+    False,
+    If,
+    Else,
+    Return
 }
 
 impl AsRef<str> for TokenType {
@@ -40,7 +53,20 @@ impl AsRef<str> for TokenType {
             TokenType::LBrace => "{",
             TokenType::RBrace => "}",
             TokenType::Function => "FUNCTION",
-            TokenType::Let => "LET"
+            TokenType::Let => "LET",
+            TokenType::Minus => "-",
+            TokenType::Bang => "!",
+            TokenType::Asterisk => "*",
+            TokenType::Slash => "/",
+            TokenType::Lt => "<",
+            TokenType::Gt => ">",
+            TokenType::True => "TRUE",
+            TokenType::False => "FALSE",
+            TokenType::If => "IF",
+            TokenType::Else => "ELSE",
+            TokenType::Return => "RETURN",
+            TokenType::Eq => "==",
+            TokenType::NotEq => "!=",
         }
     }
 }
@@ -49,6 +75,11 @@ pub fn lookup_ident(ident: &str) -> TokenType {
     match ident {
         "fn" => TokenType::Function,
         "let" => TokenType::Let,
+        "true" => TokenType::True,
+        "false" => TokenType::False,
+        "if" => TokenType::If,
+        "else" => TokenType::Else,
+        "return" => TokenType::Return,
         _ => TokenType::Ident
     }
 }
