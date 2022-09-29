@@ -1,4 +1,4 @@
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum TokenType {
     Illegal,
     Eof,
@@ -34,7 +34,7 @@ pub enum TokenType {
     False,
     If,
     Else,
-    Return
+    Return,
 }
 
 impl AsRef<str> for TokenType {
@@ -80,11 +80,11 @@ pub fn lookup_ident(ident: &str) -> TokenType {
         "if" => TokenType::If,
         "else" => TokenType::Else,
         "return" => TokenType::Return,
-        _ => TokenType::Ident
+        _ => TokenType::Ident,
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Token {
     pub token_type: TokenType,
     pub literal: String,
@@ -92,10 +92,9 @@ pub struct Token {
 
 impl Token {
     pub fn new(token_type: TokenType, literal: impl ToString) -> Token {
-        Token{
+        Token {
             token_type,
             literal: literal.to_string(),
         }
     }
 }
-

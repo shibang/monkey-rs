@@ -40,64 +40,59 @@ impl Lexer {
     pub fn next_token(&mut self) -> Token {
         self.skip_whitespace();
 
-        let ch = self.ch;
-        let token = match ch {
+        let token = match self.ch {
             '=' => {
                 if self.peek_char() == '=' {
-                    let ch = self.ch;
                     self.read_char();
-                    let literal = format!("{}{}", ch, self.ch);
-                    Token::new(TokenType::Eq, literal)
+                    Token::new(TokenType::Eq, "==")
                 } else {
-                    Token::new(TokenType::Assign, ch)
+                    Token::new(TokenType::Assign, "=")
                 }
-            },
-            ';' => Token::new(TokenType::Semicolon, ch),
-            '(' => Token::new(TokenType::LParen, ch),
-            ')' => Token::new(TokenType::RParen, ch),
-            ',' => Token::new(TokenType::Comma, ch),
-            '+' => Token::new(TokenType::Plus, ch),
-            '-' => Token::new(TokenType::Minus, ch),
-            '{' => Token::new(TokenType::LBrace, ch),
-            '}' => Token::new(TokenType::RBrace, ch),
+            }
+            ';' => Token::new(TokenType::Semicolon, ";"),
+            '(' => Token::new(TokenType::LParen, "("),
+            ')' => Token::new(TokenType::RParen, ")"),
+            ',' => Token::new(TokenType::Comma, ","),
+            '+' => Token::new(TokenType::Plus, "+"),
+            '-' => Token::new(TokenType::Minus, "-"),
+            '{' => Token::new(TokenType::LBrace, "{"),
+            '}' => Token::new(TokenType::RBrace, "}"),
             '!' => {
                 if self.peek_char() == '=' {
-                    let ch = self.ch;
                     self.read_char();
-                    let literal = format!("{}{}", ch, self.ch);
-                    Token::new(TokenType::NotEq, literal)
+                    Token::new(TokenType::NotEq, "!=")
                 } else {
-                    Token::new(TokenType::Bang, ch)
+                    Token::new(TokenType::Bang, "!")
                 }
-            },
-            '/' => Token::new(TokenType::Slash, ch),
-            '*' => Token::new(TokenType::Asterisk, ch),
-            '<' => Token::new(TokenType::Lt, ch),
-            '>' => Token::new(TokenType::Gt, ch),
-            '\0' => Token::new(TokenType::Eof, '\0'),
+            }
+            '/' => Token::new(TokenType::Slash, "/"),
+            '*' => Token::new(TokenType::Asterisk, "*"),
+            '<' => Token::new(TokenType::Lt, "<"),
+            '>' => Token::new(TokenType::Gt, ">"),
+            '\0' => Token::new(TokenType::Eof, "\0"),
             _letter if self.is_letter() => {
                 let literal = self.read_identifier();
                 let token_type = token::lookup_ident(&literal);
-                return Token::new(token_type, &literal) // return is necessary
-            },
-            _number if ch.is_ascii_digit() => {
+                return Token::new(token_type, literal); // return is necessary
+            }
+            _number if self.ch.is_ascii_digit() => {
                 let literal = self.read_number();
-                return Token::new(TokenType::Int, literal)
+                return Token::new(TokenType::Int, literal);
             }
             _ => {
-                Token::new(TokenType::Illegal, ch) // return is necessary
-            },
+                return Token::new(TokenType::Illegal, ""); // return is necessary
+            }
         };
         self.read_char();
         token
     }
 
-    fn read_identifier(&mut self) -> String {
+    fn read_identifier(&mut self) -> &str {
         let pos = self.pos;
         while self.is_letter() {
             self.read_char();
         }
-        self.input.chars().take(self.pos).skip(pos).collect()
+        &self.input[pos..self.pos]
     }
 
     fn skip_whitespace(&mut self) {
@@ -106,12 +101,12 @@ impl Lexer {
         }
     }
 
-    fn read_number(&mut self) -> String {
+    fn read_number(&mut self) -> &str {
         let pos = self.pos;
         while self.ch.is_ascii_digit() {
             self.read_char();
         }
-        self.input.chars().take(self.pos).skip(pos).collect()
+        &self.input[pos..self.pos]
     }
 
     fn is_letter(&self) -> bool {
@@ -219,14 +214,22 @@ mod tests {
             (TokenType::NotEq, "!="),
             (TokenType::Int, "9"),
             (TokenType::Semicolon, ";"),
-            (TokenType::Eof, "\0")
+            (TokenType::Eof, "\0"),
         ];
 
         let mut lexer = Lexer::new(input.to_string());
         for (i, tt) in tests.iter().enumerate() {
             let token = lexer.next_token();
-            assert_eq!(token.token_type, tt.0, "tests[{}] - token type wrong. expected={:?}, got={:?}", i, tt.0, token.token_type);
-            assert_eq!(token.literal, tt.1, "tests[{}] - literal wrong. expected={}, got={}", i, tt.1, token.literal);
+            assert_eq!(
+                token.token_type, tt.0,
+                "tests[{}] - token type wrong. expected={:?}, got={:?}",
+                i, tt.0, token.token_type
+            );
+            assert_eq!(
+                token.literal, tt.1,
+                "tests[{}] - literal wrong. expected={}, got={}",
+                i, tt.1, token.literal
+            );
         }
     }
 }
