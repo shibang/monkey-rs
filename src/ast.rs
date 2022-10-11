@@ -88,3 +88,29 @@ impl Node for Identifier {
 }
 
 impl Expression for Identifier {}
+
+pub struct ReturnStatement {
+    pub token: token::Token,
+    pub return_value: Option<Box<dyn Expression>>,
+}
+
+impl ReturnStatement {
+    pub fn new(token: token::Token) -> Self {
+        ReturnStatement {
+            token: token,
+            return_value: None,
+        }
+    }
+}
+
+impl Node for ReturnStatement {
+    fn token_literal(&self) -> String {
+        self.token.literal.clone()
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+}
+
+impl Statement for ReturnStatement {}

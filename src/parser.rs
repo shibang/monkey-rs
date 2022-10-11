@@ -62,6 +62,7 @@ impl Parser {
         if let Some(cur_token) = &self.cur_token {
             match cur_token.token_type {
                 TokenType::Let => self.parse_let_statement(),
+                TokenType::Return => self.parse_return_statement(),
                 _ => None,
             }
         } else {
@@ -93,6 +94,23 @@ impl Parser {
         Some(Box::new(let_stmt))
     }
 
+    fn parse_return_statement(&mut self) -> Option<Box<dyn ast::Statement>> {
+        if self.cur_token.is_none() {
+            return None;
+        }
+
+        let token = self.cur_token.as_ref().unwrap().clone();
+        let mut return_stmt = ast::ReturnStatement::new(token);
+
+        self.next_token();
+
+        // TODO: skip expression
+        while !self.cur_token_is(TokenType::Semicolon) {
+            self.next_token();
+        }
+        Some(Box::new(return_stmt))
+    }
+
     fn cur_token_is(&self, token_type: TokenType) -> bool {
         self.cur_token.as_ref().unwrap().token_type == token_type
     }
@@ -118,7 +136,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn let_statement() {
+    fn let_statements() {
         let input = r#"
         let x = 5;
         let y = 10;
@@ -175,6 +193,43 @@ mod tests {
             ident,
             let_stmt_name.token_literal()
         );
+    }
+
+    #[test]
+    fn return_statements() {
+        let input = r#"
+        return 5;
+        return 10;
+        return 993 322;
+        "#;
+
+        let lexer = Lexer::new(input.to_string());
+        let mut parser = Parser::new(lexer);
+
+        let program = parser.parse_program();
+        check_parser_errors(&parser);
+        assert!(program.is_some(), "parse_program() return None");
+
+        let statements = program.unwrap().statements;
+        assert_eq!(
+            3,
+            statements.len(),
+            "program.statements does not contain 3 statements. got={}",
+            statements.len()
+        );
+
+        for stmt in statements.iter() {
+            let return_stmt = stmt.as_any().downcast_ref::<ast::ReturnStatement>();
+            assert!(return_stmt.is_some(), "stmt not ast::ReturnStatement");
+
+            let return_stmt = return_stmt.unwrap();
+            assert_eq!(
+                "return",
+                &return_stmt.token_literal(),
+                "return_stmt.token_literal not 'return', got {}",
+                return_stmt.token_literal()
+            );
+        }
     }
 
     fn check_parser_errors(parser: &Parser) {
